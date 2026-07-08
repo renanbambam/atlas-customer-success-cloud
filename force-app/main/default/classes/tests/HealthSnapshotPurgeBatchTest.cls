@@ -2,7 +2,7 @@
 private class HealthSnapshotPurgeBatchTest {
     @IsTest
     static void deletesOnlySnapshotsBeyondTheRetentionWindow() {
-        Account account = TestDataFactory.createAccounts(1)[0];
+        Account account = AtlasTestDataFactory.createAccounts(1)[0];
         Date cutoffSafe = Date.today().addMonths(-1);
         Date beyondRetention = Date.today().addMonths(-(AtlasSettings.snapshotRetentionMonths() + 1));
 

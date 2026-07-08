@@ -1,10 +1,13 @@
 /**
- * Base class for all trigger handlers. Routes trigger events to overridable
- * methods and exposes a transaction-scoped bypass API so data migrations and
- * integration jobs can suppress automation deliberately instead of with flags
- * on records.
+ * Base class for all Atlas trigger handlers. Routes trigger events to
+ * overridable methods and exposes a transaction-scoped bypass API so data
+ * migrations and integration jobs can suppress automation deliberately
+ * instead of with flags on records.
+ *
+ * Deliberately prefixed: a class literally named "TriggerHandler" is the most
+ * common collision in orgs that host more than one codebase.
  */
-public virtual class TriggerHandler {
+public virtual class AtlasTriggerHandler {
     private static final Set<String> BYPASSED = new Set<String>();
 
     public void run() {

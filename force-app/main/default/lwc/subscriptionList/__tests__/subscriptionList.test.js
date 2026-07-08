@@ -1,4 +1,4 @@
-import { createElement } from 'lwc';
+import { createElement } from '@lwc/engine-dom';
 import SubscriptionList from 'c/subscriptionList';
 import getSubscriptions from '@salesforce/apex/SubscriptionController.getSubscriptions';
 

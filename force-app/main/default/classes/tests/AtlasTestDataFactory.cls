@@ -3,7 +3,7 @@
  * schema grows a required field, this is the only place that changes.
  */
 @IsTest
-public class TestDataFactory {
+public class AtlasTestDataFactory {
     public static List<Account> createAccounts(Integer count) {
         List<Account> accounts = new List<Account>();
         for (Integer i = 0; i < count; i++) {
@@ -129,6 +129,10 @@ public class TestDataFactory {
                 new PermissionSetAssignment(AssigneeId = targetUser.Id, PermissionSetId = permissionSet.Id)
             );
         }
-        insert assignments;
+        // Setup-object DML in its own runAs block so callers can freely mix it
+        // with regular DML in the same test method.
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            insert assignments;
+        }
     }
 }

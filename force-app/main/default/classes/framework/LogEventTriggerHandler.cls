@@ -3,7 +3,7 @@
  * DML is deliberately SYSTEM_MODE (ADR-0005) and allOrNone=false: losing one
  * malformed entry must never block the rest of the batch.
  */
-public without sharing class LogEventTriggerHandler extends TriggerHandler {
+public without sharing class LogEventTriggerHandler extends AtlasTriggerHandler {
     protected override void afterInsert(List<SObject> newRecords) {
         List<App_Log__c> logs = new List<App_Log__c>();
         for (Log_Event__e event : (List<Log_Event__e>) newRecords) {

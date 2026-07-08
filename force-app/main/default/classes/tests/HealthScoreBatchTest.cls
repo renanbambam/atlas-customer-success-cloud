@@ -2,8 +2,8 @@
 private class HealthScoreBatchTest {
     @IsTest
     static void nightlyRunScoresEveryAccountWithAnActiveSubscription() {
-        List<Account> customers = TestDataFactory.createAccounts(50);
-        TestDataFactory.createSubscriptions(customers, 'Active');
+        List<Account> customers = AtlasTestDataFactory.createAccounts(50);
+        AtlasTestDataFactory.createSubscriptions(customers, 'Active');
         // An account with no active subscription must stay out of the run.
         Account prospect = new Account(Name = 'Prospect Only');
         insert prospect;
@@ -31,8 +31,8 @@ private class HealthScoreBatchTest {
 
     @IsTest
     static void schedulerLaunchesTheBatch() {
-        List<Account> customers = TestDataFactory.createAccounts(1);
-        TestDataFactory.createSubscriptions(customers, 'Active');
+        List<Account> customers = AtlasTestDataFactory.createAccounts(1);
+        AtlasTestDataFactory.createSubscriptions(customers, 'Active');
 
         Test.startTest();
         String jobId = System.schedule(

@@ -2,7 +2,7 @@
 private class AtlasSubscriptionRestApiTest {
     @TestSetup
     static void setup() {
-        TestDataFactory.createAccounts(2);
+        AtlasTestDataFactory.createAccounts(2);
     }
 
     private static void post(String body) {

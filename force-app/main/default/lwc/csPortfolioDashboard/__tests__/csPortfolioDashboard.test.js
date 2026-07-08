@@ -1,4 +1,4 @@
-import { createElement } from 'lwc';
+import { createElement } from '@lwc/engine-dom';
 import CsPortfolioDashboard from 'c/csPortfolioDashboard';
 import getPortfolioSummary from '@salesforce/apex/PortfolioController.getPortfolioSummary';
 import getAccountsByRisk from '@salesforce/apex/PortfolioController.getAccountsByRisk';

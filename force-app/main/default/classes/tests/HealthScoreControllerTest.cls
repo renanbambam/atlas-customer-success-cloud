@@ -2,8 +2,8 @@
 private class HealthScoreControllerTest {
     @TestSetup
     static void setup() {
-        List<Account> accounts = TestDataFactory.createAccounts(1);
-        TestDataFactory.createSubscriptions(accounts, 'Active');
+        List<Account> accounts = AtlasTestDataFactory.createAccounts(1);
+        AtlasTestDataFactory.createSubscriptions(accounts, 'Active');
     }
 
     @IsTest
@@ -58,7 +58,7 @@ private class HealthScoreControllerTest {
     @IsTest
     static void userWithoutAtlasPermissionsIsDenied() {
         Account account = [SELECT Id FROM Account LIMIT 1];
-        User restrictedUser = TestDataFactory.createStandardUser();
+        User restrictedUser = AtlasTestDataFactory.createStandardUser();
 
         System.runAs(restrictedUser) {
             try {
@@ -73,8 +73,8 @@ private class HealthScoreControllerTest {
     @IsTest
     static void csmPermissionSetGrantsReadAccess() {
         Account account = [SELECT Id, OwnerId FROM Account LIMIT 1];
-        User csmUser = TestDataFactory.createStandardUser();
-        TestDataFactory.assignPermissionSets(csmUser, new List<String>{ 'Atlas_CS_Base', 'Atlas_CSM' });
+        User csmUser = AtlasTestDataFactory.createStandardUser();
+        AtlasTestDataFactory.assignPermissionSets(csmUser, new List<String>{ 'Atlas_CS_Base', 'Atlas_CSM' });
         // Private OWD: give the CSM record access the way the org would — ownership.
         account.OwnerId = csmUser.Id;
         update account;

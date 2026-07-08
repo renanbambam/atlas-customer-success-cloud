@@ -151,13 +151,14 @@ One trigger per object, zero logic in the trigger body:
 
 ```
 SubscriptionTrigger (all events)
-  └─ SubscriptionTriggerHandler extends TriggerHandler
+  └─ SubscriptionTriggerHandler extends AtlasTriggerHandler
        ├─ before: SubscriptionDomain (defaulting, state-transition validation)
        └─ after:  SubscriptionService (renewal opportunity sync)
 ```
 
-`TriggerHandler` (base class) provides: event routing, per-object bypass API
-(`TriggerHandler.bypass('SubscriptionTriggerHandler')`) for data migrations, and a static
+`AtlasTriggerHandler` (base class — app-prefixed precisely because "TriggerHandler" is the
+most collided class name in multi-project orgs) provides: event routing, per-object bypass API
+(`AtlasTriggerHandler.bypass('SubscriptionTriggerHandler')`) for data migrations, and a static
 run-guard against reentrancy. Bypass state is transaction-scoped statics — no custom settings,
 no hidden global state.
 
@@ -308,7 +309,7 @@ Rule of thumb applied: **declarative where admins iterate, Apex where engineers 
 
 ## 12. Testing strategy
 
-- `TestDataFactory` builds valid object graphs; tests never hand-roll records.
+- `AtlasTestDataFactory` builds valid object graphs; tests never hand-roll records.
 - Unit tests per service/domain class; trigger tests operate on 200+ records (bulk proof).
 - `HttpCalloutMock` for all callout paths, including 5xx retry and 4xx no-retry branches.
 - `Test.getEventBus().deliver()` for platform event subscriber tests.
@@ -357,6 +358,16 @@ product decision that may need tuning.
 | R13 | Scheduled-flow entry criteria could tempt per-interview Get Records at scale             | High if violated      | Rule codified in DEVELOPER_GUIDE/ARCHITECTURE: scheduled flows may filter only on indexed fields of the triggering object; anything needing joins is Apex |
 | R14 | Aggregate dashboard queries run as the viewer                                            | — (intended)          | Confirmed correct: USER_MODE means a manager's KPIs are their visible book, which is the business requirement, not a bug                                  |
 | R15 | Hand-formatting drift across 60+ Apex/LWC files                                          | Low — review friction | Prettier (incl. prettier-plugin-apex) is now the format authority; `prettier:verify` gates CI                                                             |
+
+### Org-verified findings (v1.3 — everything below surfaced by deploying and running the suite in a real org)
+
+| #   | Finding                                                                                                                                                                      | Resolution                                                                                                                                                |
+| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R16 | Generic framework class names (`TriggerHandler`, `TestDataFactory`) collided with another codebase sharing the org, silently replacing its classes                           | Renamed to `AtlasTriggerHandler` / `AtlasTestDataFactory`; rule added to the developer guide: framework-level classes carry the app prefix                |
+| R17 | Freshly deployed fields and record types grant FLS / record-type visibility to no one, so `WITH USER_MODE` paths fail even for admins                                        | Permission-set assignment is a mandatory deploy step (CI, README, guides); record-type visibility added to `Atlas_CS_Base` / `Atlas_Integration`          |
+| R18 | Tests resolved the Standard User profile by its English display name, which breaks on localized orgs                                                                         | Factory selects a profile structurally (`UserType`, license, no Modify/View All Data)                                                                     |
+| R19 | Mixing `PermissionSetAssignment` DML with regular DML in one test transaction throws MIXED_DML                                                                               | Factory wraps setup-object DML in its own `System.runAs` block                                                                                            |
+| R20 | `Product2` lookups cannot carry a restricted delete constraint; Opportunity Business Processes reject stage defaults; detail objects must align sharing/bulk/streaming flags | Product lookup is SetNull + a `Product_Required` validation rule; defaults removed from the Business Process; flags aligned on all Master-Detail children |
 
 ---
 

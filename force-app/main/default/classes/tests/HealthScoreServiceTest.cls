@@ -2,8 +2,8 @@
 private class HealthScoreServiceTest {
     @TestSetup
     static void setup() {
-        List<Account> accounts = TestDataFactory.createAccounts(2);
-        TestDataFactory.createSubscriptions(accounts, 'Active');
+        List<Account> accounts = AtlasTestDataFactory.createAccounts(2);
+        AtlasTestDataFactory.createSubscriptions(accounts, 'Active');
     }
 
     @IsTest
@@ -11,7 +11,7 @@ private class HealthScoreServiceTest {
         Account account = [SELECT Id FROM Account ORDER BY Name LIMIT 1];
         account.License_Utilization__c = 80;
         update account;
-        TestDataFactory.createNpsResponses(account, new List<Integer>{ 10, 10, 9 });
+        AtlasTestDataFactory.createNpsResponses(account, new List<Integer>{ 10, 10, 9 });
 
         Test.startTest();
         new HealthScoreService().calculate(new Set<Id>{ account.Id }, System.AccessLevel.SYSTEM_MODE);
@@ -88,8 +88,8 @@ private class HealthScoreServiceTest {
         account.Churn_Risk__c = 'Low';
         account.License_Utilization__c = 5; // shelfware
         update account;
-        TestDataFactory.createNpsResponses(account, new List<Integer>{ 0, 1, 2 }); // all detractors
-        TestDataFactory.createOpenCases(account, 6);
+        AtlasTestDataFactory.createNpsResponses(account, new List<Integer>{ 0, 1, 2 }); // all detractors
+        AtlasTestDataFactory.createOpenCases(account, 6);
 
         Test.startTest();
         new HealthScoreService().calculate(new Set<Id>{ account.Id }, System.AccessLevel.SYSTEM_MODE);

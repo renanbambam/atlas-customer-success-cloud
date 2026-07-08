@@ -2,8 +2,8 @@
 private class RenewalWorkspaceControllerTest {
     @TestSetup
     static void setup() {
-        List<Account> accounts = TestDataFactory.createAccounts(3);
-        List<Subscription__c> subscriptions = TestDataFactory.createSubscriptions(accounts, 'Draft');
+        List<Account> accounts = AtlasTestDataFactory.createAccounts(3);
+        List<Subscription__c> subscriptions = AtlasTestDataFactory.createSubscriptions(accounts, 'Draft');
         // Renewal dates 20 / 50 / 200 days out, then activate to open the pipeline.
         subscriptions[0].Renewal_Date__c = Date.today().addDays(20);
         subscriptions[1].Renewal_Date__c = Date.today().addDays(50);

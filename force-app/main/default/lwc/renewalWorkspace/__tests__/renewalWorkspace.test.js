@@ -1,4 +1,4 @@
-import { createElement } from 'lwc';
+import { createElement } from '@lwc/engine-dom';
 import RenewalWorkspace from 'c/renewalWorkspace';
 import getRenewals from '@salesforce/apex/RenewalWorkspaceController.getRenewals';
 
