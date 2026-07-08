@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Active_Requires_Renewal_Date</fullName>
+    <active>true</active>
+    <description>The renewal pipeline is driven off Renewal Date; an active subscription without one would silently fall out of the renewal process.</description>
+    <errorConditionFormula>ISPICKVAL(Status__c, "Active") &amp;&amp; ISBLANK(Renewal_Date__c)</errorConditionFormula>
+    <errorDisplayField>Renewal_Date__c</errorDisplayField>
+    <errorMessage>An active subscription must have a Renewal Date.</errorMessage>
+</ValidationRule>

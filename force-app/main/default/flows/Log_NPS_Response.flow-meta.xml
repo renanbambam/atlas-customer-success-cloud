@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>62.0</apiVersion>
+    <description>Guided entry for NPS collected off-channel (QBR, phone). Runs from an Account quick action; the record trigger and validation rules do the rest, so this flow stays a thin capture form.</description>
+    <environments>Default</environments>
+    <interviewLabel>Log NPS Response {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Log NPS Response</label>
+    <processType>Flow</processType>
+    <recordCreates>
+        <name>Create_Response</name>
+        <label>Create Response</label>
+        <locationX>176</locationX>
+        <locationY>278</locationY>
+        <inputAssignments>
+            <field>Account__c</field>
+            <value>
+                <elementReference>recordId</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Comment__c</field>
+            <value>
+                <elementReference>Comment</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Response_Date__c</field>
+            <value>
+                <elementReference>$Flow.CurrentDate</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Score__c</field>
+            <value>
+                <elementReference>Score</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Type__c</field>
+            <value>
+                <stringValue>NPS</stringValue>
+            </value>
+        </inputAssignments>
+        <object>Survey_Response__c</object>
+    </recordCreates>
+    <screens>
+        <name>Capture_Response</name>
+        <label>Capture Response</label>
+        <locationX>176</locationX>
+        <locationY>158</locationY>
+        <allowBack>false</allowBack>
+        <allowFinish>true</allowFinish>
+        <allowPause>false</allowPause>
+        <connector>
+            <targetReference>Create_Response</targetReference>
+        </connector>
+        <fields>
+            <name>Intro</name>
+            <fieldText>&lt;p&gt;Log an NPS answer the customer gave outside the survey tool. The account score updates immediately.&lt;/p&gt;</fieldText>
+            <fieldType>DisplayText</fieldType>
+        </fields>
+        <fields>
+            <name>Score</name>
+            <dataType>Number</dataType>
+            <fieldText>NPS score (0-10)</fieldText>
+            <fieldType>InputField</fieldType>
+            <isRequired>true</isRequired>
+            <scale>0</scale>
+        </fields>
+        <fields>
+            <name>Comment</name>
+            <fieldText>Verbatim comment</fieldText>
+            <fieldType>LargeTextArea</fieldType>
+            <isRequired>false</isRequired>
+        </fields>
+        <showFooter>true</showFooter>
+        <showHeader>true</showHeader>
+    </screens>
+    <start>
+        <locationX>50</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Capture_Response</targetReference>
+        </connector>
+    </start>
+    <status>Active</status>
+    <variables>
+        <name>recordId</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+</Flow>

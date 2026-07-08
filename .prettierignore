@@ -1,0 +1,7 @@
+# Metadata XML is formatted by hand to match Salesforce retrieve output
+*.xml
+
+node_modules/
+coverage/
+.sf/
+.sfdx/

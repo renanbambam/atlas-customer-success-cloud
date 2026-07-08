@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningMessageChannel xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Broadcast after a health score recalculation so every component on the account page refreshes without a full reload.</description>
+    <isExposed>true</isExposed>
+    <lightningMessageFields>
+        <description>Id of the account whose score changed</description>
+        <fieldName>accountId</fieldName>
+    </lightningMessageFields>
+    <masterLabel>Health Score Refresh</masterLabel>
+</LightningMessageChannel>

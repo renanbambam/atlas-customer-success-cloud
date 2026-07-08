@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="Atlas Apex Rules"
+         xmlns="http://pmd.sourceforge.net/ruleset/2.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://pmd.sourceforge.net/ruleset/2.0.0 https://pmd.sourceforge.io/ruleset_2_0_0.xsd">
+    <description>
+        Rules the Atlas architecture treats as non-negotiable: bulkification,
+        security enforcement, no hardcoded ids, meaningful tests.
+    </description>
+
+    <!-- Performance / governor limits -->
+    <rule ref="category/apex/performance.xml/OperationWithLimitsInLoop" />
+    <rule ref="category/apex/performance.xml/AvoidDebugStatements" />
+
+    <!-- Security -->
+    <rule ref="category/apex/security.xml/ApexCRUDViolation" />
+    <rule ref="category/apex/security.xml/ApexSharingViolations" />
+    <rule ref="category/apex/security.xml/ApexSOQLInjection" />
+    <rule ref="category/apex/errorprone.xml/AvoidHardcodingId" />
+
+    <!-- Tests -->
+    <rule ref="category/apex/bestpractices.xml/ApexUnitTestClassShouldHaveAsserts" />
+    <rule ref="category/apex/bestpractices.xml/ApexUnitTestShouldNotUseSeeAllDataTrue" />
+
+    <!-- Design -->
+    <!-- AvoidGlobalModifier is deliberately absent: @RestResource classes must be global. -->
+    <rule ref="category/apex/bestpractices.xml/AvoidLogicInTrigger" />
+    <rule ref="category/apex/codestyle.xml/ClassNamingConventions" />
+    <rule ref="category/apex/codestyle.xml/MethodNamingConventions" />
+    <rule ref="category/apex/design.xml/CyclomaticComplexity">
+        <properties>
+            <property name="classReportLevel" value="60" />
+            <property name="methodReportLevel" value="15" />
+        </properties>
+    </rule>
+</ruleset>

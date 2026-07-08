@@ -1,0 +1,41 @@
+<template>
+    <lightning-card title="Renewal Workspace" icon-name="standard:forecasts">
+        <div class="horizon-filter" slot="actions">
+            <lightning-combobox
+                name="horizon"
+                label="Horizon"
+                variant="label-hidden"
+                value={selectedHorizon}
+                options={horizonOptions}
+                onchange={handleHorizonChange}
+            ></lightning-combobox>
+        </div>
+
+        <div class="slds-var-p-horizontal_medium slds-var-p-bottom_medium">
+            <template lwc:if={errorMessage}>
+                <div class="slds-text-color_error" role="alert">{errorMessage}</div>
+            </template>
+            <template lwc:elseif={isEmpty}>
+                <p class="slds-text-body_small slds-text-color_weak">No open renewals inside this horizon.</p>
+            </template>
+            <template lwc:else>
+                <div class="table-wrap">
+                    <lightning-datatable
+                        key-field="opportunityId"
+                        data={rows}
+                        columns={columns}
+                        sorted-by={sortedBy}
+                        sorted-direction={sortedDirection}
+                        onsort={handleSort}
+                        enable-infinite-loading
+                        onloadmore={handleLoadMore}
+                        hide-checkbox-column
+                    ></lightning-datatable>
+                </div>
+            </template>
+            <template lwc:if={isLoading}>
+                <lightning-spinner alternative-text="Loading renewals" size="small"></lightning-spinner>
+            </template>
+        </div>
+    </lightning-card>
+</template>

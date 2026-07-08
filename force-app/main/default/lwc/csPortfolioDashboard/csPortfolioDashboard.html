@@ -1,0 +1,80 @@
+<template>
+    <lightning-card title="Customer Success Portfolio" icon-name="standard:analytics">
+        <div class="slds-var-p-horizontal_medium slds-var-p-bottom_medium">
+            <template lwc:if={summaryError}>
+                <div class="slds-text-color_error" role="alert">{summaryError}</div>
+            </template>
+
+            <template lwc:if={summary}>
+                <!-- KPI tiles -->
+                <div class="kpi-grid slds-var-m-bottom_medium">
+                    <template for:each={kpis} for:item="kpi">
+                        <div key={kpi.key} class="kpi-tile">
+                            <div class="kpi-label slds-text-body_small slds-text-color_weak">{kpi.label}</div>
+                            <div class="kpi-value">{kpi.value}</div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Risk distribution -->
+                <h2 class="slds-text-heading_small slds-var-m-bottom_x-small">Churn risk distribution</h2>
+                <div class="slds-var-m-bottom_medium" role="img" aria-label="Accounts by churn risk band">
+                    <template for:each={riskBars} for:item="bar">
+                        <div key={bar.key} class="risk-row" title={bar.title}>
+                            <span class="risk-label slds-text-body_small">{bar.label}</span>
+                            <div class="bar-track">
+                                <div class={bar.cssClass} style={bar.barStyle}></div>
+                            </div>
+                            <span class="risk-count slds-text-body_small">{bar.count}</span>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Triage list -->
+                <div class="slds-grid slds-grid_vertical-align-end slds-var-m-bottom_x-small">
+                    <h2 class="slds-text-heading_small slds-col">{listTitle}</h2>
+                    <div class="risk-filter">
+                        <lightning-combobox
+                            name="riskFilter"
+                            label="Risk band"
+                            variant="label-hidden"
+                            value={selectedRisk}
+                            options={riskOptions}
+                            onchange={handleRiskChange}
+                        ></lightning-combobox>
+                    </div>
+                </div>
+
+                <template lwc:if={accountError}>
+                    <div class="slds-text-color_error" role="alert">{accountError}</div>
+                </template>
+                <template lwc:elseif={isListEmpty}>
+                    <p class="slds-text-body_small slds-text-color_weak">
+                        No accounts in this risk band. That is the goal.
+                    </p>
+                </template>
+                <template lwc:else>
+                    <lightning-datatable
+                        key-field="accountId"
+                        data={accountRows}
+                        columns={accountColumns}
+                        hide-checkbox-column
+                    ></lightning-datatable>
+                    <div class="slds-align_absolute-center slds-var-m-top_small">
+                        <template lwc:if={hasMore}>
+                            <lightning-button
+                                label="Load more"
+                                onclick={handleLoadMore}
+                                disabled={isLoadingAccounts}
+                            ></lightning-button>
+                        </template>
+                    </div>
+                </template>
+            </template>
+
+            <template lwc:if={isLoadingAccounts}>
+                <lightning-spinner alternative-text="Loading" size="small"></lightning-spinner>
+            </template>
+        </div>
+    </lightning-card>
+</template>
