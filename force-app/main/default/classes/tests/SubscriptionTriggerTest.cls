@@ -4,13 +4,13 @@ private class SubscriptionTriggerTest {
 
     @TestSetup
     static void setup() {
-        TestDataFactory.createAccounts(BULK_SIZE);
+        AtlasTestDataFactory.createAccounts(BULK_SIZE);
     }
 
     @IsTest
     static void activationCreatesOneRenewalOpportunityPerSubscriptionInBulk() {
         List<Account> accounts = [SELECT Id FROM Account];
-        List<Subscription__c> subscriptions = TestDataFactory.createSubscriptions(accounts, 'Draft');
+        List<Subscription__c> subscriptions = AtlasTestDataFactory.createSubscriptions(accounts, 'Draft');
 
         for (Subscription__c subscription : subscriptions) {
             subscription.Status__c = 'Active';
@@ -31,7 +31,7 @@ private class SubscriptionTriggerTest {
     @IsTest
     static void activationIsIdempotentOnRepeatedSaves() {
         List<Account> accounts = [SELECT Id FROM Account LIMIT 1];
-        List<Subscription__c> subscriptions = TestDataFactory.createSubscriptions(accounts, 'Draft');
+        List<Subscription__c> subscriptions = AtlasTestDataFactory.createSubscriptions(accounts, 'Draft');
         subscriptions[0].Status__c = 'Active';
         update subscriptions;
 
@@ -49,7 +49,7 @@ private class SubscriptionTriggerTest {
     @IsTest
     static void renewalDateMoveRealignsOpenRenewalOpportunity() {
         List<Account> accounts = [SELECT Id FROM Account LIMIT 1];
-        List<Subscription__c> subscriptions = TestDataFactory.createSubscriptions(accounts, 'Draft');
+        List<Subscription__c> subscriptions = AtlasTestDataFactory.createSubscriptions(accounts, 'Draft');
         subscriptions[0].Status__c = 'Active';
         update subscriptions;
 
@@ -68,7 +68,7 @@ private class SubscriptionTriggerTest {
     @IsTest
     static void churnClosesOpenRenewalAsLost() {
         List<Account> accounts = [SELECT Id FROM Account LIMIT 1];
-        List<Subscription__c> subscriptions = TestDataFactory.createSubscriptions(accounts, 'Draft');
+        List<Subscription__c> subscriptions = AtlasTestDataFactory.createSubscriptions(accounts, 'Draft');
         subscriptions[0].Status__c = 'Active';
         update subscriptions;
 
@@ -87,7 +87,7 @@ private class SubscriptionTriggerTest {
     @IsTest
     static void invalidTransitionIsRejectedWithoutBlockingValidRows() {
         List<Account> accounts = [SELECT Id FROM Account LIMIT 2];
-        List<Subscription__c> subscriptions = TestDataFactory.createSubscriptions(accounts, 'Draft');
+        List<Subscription__c> subscriptions = AtlasTestDataFactory.createSubscriptions(accounts, 'Draft');
         subscriptions[0].Status__c = 'Active';
         update subscriptions[0];
         subscriptions[0].Status__c = 'Draft'; // Active -> Draft is not a legal transition
@@ -121,9 +121,9 @@ private class SubscriptionTriggerTest {
     @IsTest
     static void bypassSuppressesAutomationForMigrations() {
         List<Account> accounts = [SELECT Id FROM Account LIMIT 1];
-        TriggerHandler.bypass('SubscriptionTriggerHandler');
+        AtlasTriggerHandler.bypass('SubscriptionTriggerHandler');
         try {
-            List<Subscription__c> subscriptions = TestDataFactory.createSubscriptions(accounts, 'Draft');
+            List<Subscription__c> subscriptions = AtlasTestDataFactory.createSubscriptions(accounts, 'Draft');
             subscriptions[0].Status__c = 'Active';
             // Bypass suppresses defaulting too — a migration supplies complete rows.
             subscriptions[0].Renewal_Date__c = Date.today().addMonths(6);
@@ -134,8 +134,8 @@ private class SubscriptionTriggerTest {
                 'Bypassed handler must not create pipeline records'
             );
         } finally {
-            TriggerHandler.clearBypass('SubscriptionTriggerHandler');
+            AtlasTriggerHandler.clearBypass('SubscriptionTriggerHandler');
         }
-        System.assert(!TriggerHandler.isBypassed('SubscriptionTriggerHandler'));
+        System.assert(!AtlasTriggerHandler.isBypassed('SubscriptionTriggerHandler'));
     }
 }

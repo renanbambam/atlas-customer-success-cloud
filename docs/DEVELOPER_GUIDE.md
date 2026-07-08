@@ -38,14 +38,14 @@ transient; log and stop on deterministic failures; `Logger.flush()` in a `finall
 
 ## 4. Conventions
 
-| Thing                          | Convention                                                                             | Example                                 |
-| ------------------------------ | -------------------------------------------------------------------------------------- | --------------------------------------- |
-| Selector methods               | `select…` / `count…` / `sum…`, `SystemMode` suffix for ADR-0005 paths                  | `selectByChurnRiskPaged`                |
-| Services                       | Verb-first public methods, orchestrate only                                            | `syncRenewalOpportunities`              |
-| Tests                          | One class per unit, name states the behavior                                           | `activationIsIdempotentOnRepeatedSaves` |
-| Record types / queues / groups | Resolved by DeveloperName at runtime, never by Id                                      | `getRecordTypeInfosByDeveloperName()`   |
-| Trigger bypass                 | `TriggerHandler.bypass('XTriggerHandler')` in migration scripts, always in try/finally | —                                       |
-| LWC ↔ LWC on the same page     | Lightning Message Service (`HealthScoreRefresh__c`)                                    | health panel → subscription list        |
+| Thing                          | Convention                                                                                  | Example                                 |
+| ------------------------------ | ------------------------------------------------------------------------------------------- | --------------------------------------- |
+| Selector methods               | `select…` / `count…` / `sum…`, `SystemMode` suffix for ADR-0005 paths                       | `selectByChurnRiskPaged`                |
+| Services                       | Verb-first public methods, orchestrate only                                                 | `syncRenewalOpportunities`              |
+| Tests                          | One class per unit, name states the behavior                                                | `activationIsIdempotentOnRepeatedSaves` |
+| Record types / queues / groups | Resolved by DeveloperName at runtime, never by Id                                           | `getRecordTypeInfosByDeveloperName()`   |
+| Trigger bypass                 | `AtlasTriggerHandler.bypass('XTriggerHandler')` in migration scripts, always in try/finally | —                                       |
+| LWC ↔ LWC on the same page     | Lightning Message Service (`HealthScoreRefresh__c`)                                         | health panel → subscription list        |
 
 ## 5. Local loop
 
@@ -65,9 +65,6 @@ Assigning the permission sets is not optional: selectors run `WITH USER_MODE`, a
 deployed field grants FLS to no one — including the admin running the tests. That's the
 security model working, not a bug.
 
-```bash
-```
-
 PMD rules live in `pmd/ruleset.xml`; CI fails on severity ≥ 3 via Salesforce Code Analyzer.
 What PMD can't see (layer rules above) is on the reviewer.
 
@@ -78,3 +75,7 @@ What PMD can't see (layer rules above) is on the reviewer.
   updates only; the batch and the invocable own full recalcs).
 - Query inside a dimension, a flow loop, or `TelemetryUsageDTO` mapping. Bulk first, always.
 - Hardcode an Id, a stage name in multiple places, or a retry count. Constants and metadata exist.
+- Name a framework class something generic. `TriggerHandler` and `TestDataFactory` collided
+  with another codebase sharing a dev org and silently replaced its classes on deploy — that's
+  why ours are `AtlasTriggerHandler` and `AtlasTestDataFactory`. App-prefix anything that
+  isn't domain-specific.

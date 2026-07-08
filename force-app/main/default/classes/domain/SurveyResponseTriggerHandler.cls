@@ -3,7 +3,7 @@
  * deletes and undeletes (GDPR erasure of a detractor's response must move
  * the aggregate too).
  */
-public inherited sharing class SurveyResponseTriggerHandler extends TriggerHandler {
+public inherited sharing class SurveyResponseTriggerHandler extends AtlasTriggerHandler {
     private final SurveyService service = new SurveyService();
 
     protected override void afterInsert(List<SObject> newRecords) {

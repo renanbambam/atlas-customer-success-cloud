@@ -2,9 +2,9 @@
 private class SubscriptionControllerTest {
     @TestSetup
     static void setup() {
-        List<Account> accounts = TestDataFactory.createAccounts(1);
-        List<Subscription__c> subscriptions = TestDataFactory.createSubscriptions(accounts, 'Active');
-        TestDataFactory.createItems(subscriptions, TestDataFactory.createProduct());
+        List<Account> accounts = AtlasTestDataFactory.createAccounts(1);
+        List<Subscription__c> subscriptions = AtlasTestDataFactory.createSubscriptions(accounts, 'Active');
+        AtlasTestDataFactory.createItems(subscriptions, AtlasTestDataFactory.createProduct());
     }
 
     @IsTest
@@ -22,7 +22,7 @@ private class SubscriptionControllerTest {
     @IsTest
     static void userWithoutObjectPermissionIsDenied() {
         Account account = [SELECT Id FROM Account LIMIT 1];
-        User restrictedUser = TestDataFactory.createStandardUser();
+        User restrictedUser = AtlasTestDataFactory.createStandardUser();
 
         System.runAs(restrictedUser) {
             try {

@@ -12,7 +12,9 @@ The reference implementation of these patterns is fflib (Apex Enterprise Pattern
 
 Implement the patterns in-house, minimally:
 
-- `TriggerHandler` — virtual base with event routing, bypass API, reentrancy guard (~1 class)
+- `AtlasTriggerHandler` — virtual base with event routing, bypass API, reentrancy guard
+  (~1 class; app-prefixed because a bare "TriggerHandler" collides with sibling codebases in
+  shared orgs)
 - Selectors — one concrete class per object, `WITH USER_MODE` by default
 - `UnitOfWork` — register-new/dirty/delete with insertion-order dependency resolution and
   configurable access level

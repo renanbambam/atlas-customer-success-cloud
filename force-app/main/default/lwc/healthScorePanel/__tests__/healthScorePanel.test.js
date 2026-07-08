@@ -1,4 +1,4 @@
-import { createElement } from 'lwc';
+import { createElement } from '@lwc/engine-dom';
 import HealthScorePanel from 'c/healthScorePanel';
 import getHealthSummary from '@salesforce/apex/HealthScoreController.getHealthSummary';
 

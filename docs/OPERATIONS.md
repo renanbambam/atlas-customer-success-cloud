@@ -41,13 +41,13 @@ Billing replays: POST the same payload again — the upsert key makes it safe (A
 Suppress Atlas automation during bulk loads, always in try/finally:
 
 ```apex
-TriggerHandler.bypass('SubscriptionTriggerHandler');
-TriggerHandler.bypass('SurveyResponseTriggerHandler');
+AtlasTriggerHandler.bypass('SubscriptionTriggerHandler');
+AtlasTriggerHandler.bypass('SurveyResponseTriggerHandler');
 try {
     // load
 } finally {
-    TriggerHandler.clearBypass('SubscriptionTriggerHandler');
-    TriggerHandler.clearBypass('SurveyResponseTriggerHandler');
+    AtlasTriggerHandler.clearBypass('SubscriptionTriggerHandler');
+    AtlasTriggerHandler.clearBypass('SurveyResponseTriggerHandler');
 }
 ```
 

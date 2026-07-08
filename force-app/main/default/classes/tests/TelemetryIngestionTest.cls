@@ -2,7 +2,7 @@
 private class TelemetryIngestionTest {
     @TestSetup
     static void setup() {
-        TestDataFactory.createAccounts(3);
+        AtlasTestDataFactory.createAccounts(3);
     }
 
     private static Set<Id> accountIds() {

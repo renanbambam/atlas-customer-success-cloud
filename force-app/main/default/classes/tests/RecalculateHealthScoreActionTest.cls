@@ -2,8 +2,8 @@
 private class RecalculateHealthScoreActionTest {
     @IsTest
     static void invocableRecalculatesForFlowCallers() {
-        List<Account> accounts = TestDataFactory.createAccounts(2);
-        TestDataFactory.createSubscriptions(accounts, 'Active');
+        List<Account> accounts = AtlasTestDataFactory.createAccounts(2);
+        AtlasTestDataFactory.createSubscriptions(accounts, 'Active');
 
         Test.startTest();
         RecalculateHealthScoreAction.recalculate(new List<Id>(new Map<Id, Account>(accounts).keySet()));

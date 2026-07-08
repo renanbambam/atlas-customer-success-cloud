@@ -56,7 +56,7 @@ private class UnitOfWorkTest {
 
     @IsTest
     static void userModeBlocksWritesWithoutObjectPermission() {
-        User restrictedUser = TestDataFactory.createStandardUser();
+        User restrictedUser = AtlasTestDataFactory.createStandardUser();
         System.runAs(restrictedUser) {
             UnitOfWork uow = new UnitOfWork(new List<SObjectType>{ Subscription__c.SObjectType });
             uow.registerNew(

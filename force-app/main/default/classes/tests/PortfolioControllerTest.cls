@@ -2,7 +2,7 @@
 private class PortfolioControllerTest {
     @TestSetup
     static void setup() {
-        List<Account> accounts = TestDataFactory.createAccounts(6);
+        List<Account> accounts = AtlasTestDataFactory.createAccounts(6);
         // 3 Low / 2 Medium / 1 High
         for (Integer i = 0; i < accounts.size(); i++) {
             accounts[i].Churn_Risk__c = i < 3 ? 'Low' : (i < 5 ? 'Medium' : 'High');
@@ -10,8 +10,8 @@ private class PortfolioControllerTest {
         }
         update accounts;
 
-        List<Subscription__c> subscriptions = TestDataFactory.createSubscriptions(accounts, 'Active');
-        TestDataFactory.createItems(subscriptions, TestDataFactory.createProduct());
+        List<Subscription__c> subscriptions = AtlasTestDataFactory.createSubscriptions(accounts, 'Active');
+        AtlasTestDataFactory.createItems(subscriptions, AtlasTestDataFactory.createProduct());
     }
 
     @IsTest
@@ -59,7 +59,7 @@ private class PortfolioControllerTest {
 
     @IsTest
     static void userWithoutAtlasPermissionsSeesDenialNotData() {
-        User restrictedUser = TestDataFactory.createStandardUser();
+        User restrictedUser = AtlasTestDataFactory.createStandardUser();
         System.runAs(restrictedUser) {
             try {
                 PortfolioController.getPortfolioSummary();

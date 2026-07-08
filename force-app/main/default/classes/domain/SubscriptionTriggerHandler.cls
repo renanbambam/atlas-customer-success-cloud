@@ -3,7 +3,7 @@
  * renewal pipeline sync in the after phase. No logic lives here beyond
  * casting and delegation.
  */
-public inherited sharing class SubscriptionTriggerHandler extends TriggerHandler {
+public inherited sharing class SubscriptionTriggerHandler extends AtlasTriggerHandler {
     private final SubscriptionDomain domain = new SubscriptionDomain();
     private final SubscriptionService service = new SubscriptionService();
 

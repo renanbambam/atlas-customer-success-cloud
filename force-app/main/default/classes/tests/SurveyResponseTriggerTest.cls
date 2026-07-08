@@ -2,14 +2,14 @@
 private class SurveyResponseTriggerTest {
     @TestSetup
     static void setup() {
-        TestDataFactory.createAccounts(1);
+        AtlasTestDataFactory.createAccounts(1);
     }
 
     @IsTest
     static void npsResponsesRollUpToAccountScore() {
         Account account = [SELECT Id FROM Account LIMIT 1];
         // 2 promoters (10, 9), 1 passive (8), 1 detractor (2) => (50% - 25%) = 25
-        TestDataFactory.createNpsResponses(account, new List<Integer>{ 10, 9, 8, 2 });
+        AtlasTestDataFactory.createNpsResponses(account, new List<Integer>{ 10, 9, 8, 2 });
 
         account = [SELECT NPS__c FROM Account WHERE Id = :account.Id];
         System.assertEquals(25, account.NPS__c);
@@ -18,7 +18,7 @@ private class SurveyResponseTriggerTest {
     @IsTest
     static void deletingAResponseRecalculatesTheAggregate() {
         Account account = [SELECT Id FROM Account LIMIT 1];
-        List<Survey_Response__c> responses = TestDataFactory.createNpsResponses(
+        List<Survey_Response__c> responses = AtlasTestDataFactory.createNpsResponses(
             account,
             new List<Integer>{ 10, 0 }
         );
@@ -32,7 +32,7 @@ private class SurveyResponseTriggerTest {
     @IsTest
     static void deletingTheLastResponseClearsTheScore() {
         Account account = [SELECT Id FROM Account LIMIT 1];
-        List<Survey_Response__c> responses = TestDataFactory.createNpsResponses(
+        List<Survey_Response__c> responses = AtlasTestDataFactory.createNpsResponses(
             account,
             new List<Integer>{ 10 }
         );
@@ -76,7 +76,7 @@ private class SurveyResponseTriggerTest {
             scores.add(10); // all promoters
         }
         Test.startTest();
-        TestDataFactory.createNpsResponses(account, scores);
+        AtlasTestDataFactory.createNpsResponses(account, scores);
         Test.stopTest();
 
         System.assertEquals(100, [SELECT NPS__c FROM Account WHERE Id = :account.Id].NPS__c);
