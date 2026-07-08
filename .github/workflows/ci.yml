@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  static-analysis:
+    name: Prettier, ESLint and LWC tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prettier check
+        run: npm run prettier:verify
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: LWC unit tests
+        run: npm run test:unit:coverage
+
+  code-analyzer:
+    name: Salesforce Code Analyzer (PMD)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Salesforce CLI and Code Analyzer
+        run: |
+          npm install --global @salesforce/cli
+          sf plugins install @salesforce/sfdx-scanner
+
+      - name: Run scanner
+        run: |
+          sf scanner run \
+            --target "force-app" \
+            --engine pmd \
+            --pmdconfig pmd/ruleset.xml \
+            --severity-threshold 3
+
+  apex-tests:
+    name: Apex tests in scratch org
+    runs-on: ubuntu-latest
+    needs: [static-analysis, code-analyzer]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check for Dev Hub auth
+        id: devhub
+        run: echo "available=${{ secrets.DEVHUB_AUTH_URL != '' }}" >> "$GITHUB_OUTPUT"
+
+      - name: Install Salesforce CLI
+        if: steps.devhub.outputs.available == 'true'
+        run: npm install --global @salesforce/cli
+
+      - name: Authenticate Dev Hub
+        if: steps.devhub.outputs.available == 'true'
+        run: |
+          echo "${{ secrets.DEVHUB_AUTH_URL }}" > devhub-auth.txt
+          sf org login sfdx-url --sfdx-url-file devhub-auth.txt --alias devhub --set-default-dev-hub
+          rm devhub-auth.txt
+
+      - name: Create scratch org
+        if: steps.devhub.outputs.available == 'true'
+        run: sf org create scratch --definition-file config/project-scratch-def.json --alias ci-scratch --set-default --duration-days 1
+
+      - name: Deploy source
+        if: steps.devhub.outputs.available == 'true'
+        run: sf project deploy start --wait 20
+
+      # Everything runs WITH USER_MODE, so the test-running user needs the
+      # same permission sets a real user would get in the deploy runbook.
+      - name: Assign Atlas permission sets
+        if: steps.devhub.outputs.available == 'true'
+        run: sf org assign permset --name Atlas_CS_Base --name Atlas_CSM --name Atlas_Integration
+
+      - name: Run Apex tests
+        if: steps.devhub.outputs.available == 'true'
+        run: sf apex run test --code-coverage --result-format human --wait 30
+
+      - name: Delete scratch org
+        if: always() && steps.devhub.outputs.available == 'true'
+        run: sf org delete scratch --no-prompt --target-org ci-scratch
+
+      - name: Skipped (no Dev Hub secret)
+        if: steps.devhub.outputs.available != 'true'
+        run: echo "DEVHUB_AUTH_URL secret not configured; Apex tests run locally and on release pipelines."

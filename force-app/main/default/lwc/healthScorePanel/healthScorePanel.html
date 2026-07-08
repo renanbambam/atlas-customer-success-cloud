@@ -1,0 +1,66 @@
+<template>
+    <lightning-card title="Customer Health" icon-name="standard:metrics">
+        <lightning-button
+            slot="actions"
+            label="Recalculate"
+            onclick={handleRecalculate}
+            disabled={isRecalculating}
+        ></lightning-button>
+
+        <div class="slds-var-p-horizontal_medium slds-var-p-bottom_medium">
+            <template lwc:if={isLoading}>
+                <div class="skeleton-block slds-var-m-bottom_small"></div>
+                <div class="skeleton-block skeleton-block_short"></div>
+            </template>
+
+            <template lwc:elseif={errorMessage}>
+                <div class="slds-text-color_error" role="alert">{errorMessage}</div>
+            </template>
+
+            <template lwc:else>
+                <template lwc:if={hasScore}>
+                    <div class="slds-grid slds-grid_vertical-align-center slds-var-m-bottom_small">
+                        <span class="score slds-var-m-right_small">{summary.score}</span>
+                        <span class={riskBadgeClass}>{summary.churnRisk} risk</span>
+                        <span class="slds-var-m-left_small slds-text-body_small">{summary.trend}</span>
+                    </div>
+
+                    <template lwc:if={hasHistory}>
+                        <svg
+                            class="sparkline slds-var-m-bottom_small"
+                            viewBox={viewBox}
+                            aria-label="Health score trend"
+                            role="img"
+                        >
+                            <polyline points={sparklinePoints}></polyline>
+                        </svg>
+                    </template>
+
+                    <template for:each={dimensions} for:item="dimension">
+                        <div key={dimension.label} class="slds-var-m-bottom_x-small">
+                            <div class="slds-grid slds-grid_align-spread slds-text-body_small">
+                                <span>{dimension.label}</span>
+                                <span>{dimension.value}</span>
+                            </div>
+                            <div class="bar-track">
+                                <div class="bar-fill" style={dimension.barStyle}></div>
+                            </div>
+                        </div>
+                    </template>
+
+                    <p class="slds-text-body_small slds-text-color_weak slds-var-m-top_small">
+                        NPS: {summary.nps} · Updated:
+                        <lightning-formatted-date-time
+                            value={summary.updatedAt}
+                        ></lightning-formatted-date-time>
+                    </p>
+                </template>
+                <template lwc:else>
+                    <p class="slds-text-body_small slds-text-color_weak">
+                        This account has not been scored yet. Use Recalculate to score it now.
+                    </p>
+                </template>
+            </template>
+        </div>
+    </lightning-card>
+</template>

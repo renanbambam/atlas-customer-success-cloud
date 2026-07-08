@@ -1,0 +1,26 @@
+# Salesforce / SFDX
+.sf/
+.sfdx/
+.localdevserver/
+deploy-options.json
+
+# Dependency directories
+node_modules/
+
+# Logs
+*.log
+apex.db
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+*.iml
+.vscode/settings.json
+
+# Test output
+coverage/
+junit.xml
+test-results/

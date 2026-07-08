@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSetGroup xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Bundle for CS managers and leadership: base read plus CSM working permissions. Report folder access is org configuration.</description>
+    <label>Atlas CS Manager</label>
+    <permissionSets>Atlas_CS_Base</permissionSets>
+    <permissionSets>Atlas_CSM</permissionSets>
+</PermissionSetGroup>

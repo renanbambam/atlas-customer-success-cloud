@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SharingRules xmlns="http://soap.sforce.com/2006/04/metadata">
+    <sharingCriteriaRules>
+        <fullName>High_Risk_Accounts_To_Leadership</fullName>
+        <accessLevel>Read</accessLevel>
+        <accountSettings>
+            <caseAccessLevel>Read</caseAccessLevel>
+            <contactAccessLevel>Read</contactAccessLevel>
+            <opportunityAccessLevel>Read</opportunityAccessLevel>
+        </accountSettings>
+        <description>Leadership intervenes on escalated churn risk regardless of team ownership; read access opens the moment the scoring engine flags the account and closes when the risk drops.</description>
+        <label>High Risk Accounts To Leadership</label>
+        <sharedTo>
+            <group>Atlas_CS_Leadership</group>
+        </sharedTo>
+        <criteriaItems>
+            <field>Churn_Risk__c</field>
+            <operation>equals</operation>
+            <value>High</value>
+        </criteriaItems>
+    </sharingCriteriaRules>
+</SharingRules>

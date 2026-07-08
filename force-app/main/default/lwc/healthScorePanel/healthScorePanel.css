@@ -1,0 +1,49 @@
+.score {
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.sparkline {
+    width: 100%;
+    height: 3rem;
+}
+
+.sparkline polyline {
+    fill: none;
+    stroke: var(--slds-g-color-brand-base-50, #0176d3);
+    stroke-width: 2;
+}
+
+.bar-track {
+    background: var(--slds-g-color-neutral-base-95, #f3f3f3);
+    border-radius: 0.25rem;
+    height: 0.375rem;
+    overflow: hidden;
+}
+
+.bar-fill {
+    background: var(--slds-g-color-brand-base-50, #0176d3);
+    height: 100%;
+}
+
+.skeleton-block {
+    animation: pulse 1.2s ease-in-out infinite;
+    background: var(--slds-g-color-neutral-base-95, #f3f3f3);
+    border-radius: 0.25rem;
+    height: 2rem;
+}
+
+.skeleton-block_short {
+    width: 60%;
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.4;
+    }
+}

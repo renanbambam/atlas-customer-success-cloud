@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SharingRules xmlns="http://soap.sforce.com/2006/04/metadata">
+    <sharingCriteriaRules>
+        <fullName>Active_Subscriptions_To_Leadership</fullName>
+        <accessLevel>Read</accessLevel>
+        <description>Leadership runs portfolio reviews across teams; read access to active subscriptions avoids ownership churn while keeping draft/churned terms private.</description>
+        <label>Active Subscriptions To Leadership</label>
+        <sharedTo>
+            <group>Atlas_CS_Leadership</group>
+        </sharedTo>
+        <criteriaItems>
+            <field>Status__c</field>
+            <operation>equals</operation>
+            <value>Active</value>
+        </criteriaItems>
+    </sharingCriteriaRules>
+</SharingRules>

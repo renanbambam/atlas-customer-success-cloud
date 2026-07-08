@@ -1,0 +1,9 @@
+.horizon-filter {
+    min-width: 10rem;
+}
+
+/* Bounded height makes infinite loading meaningful on app pages. */
+.table-wrap {
+    max-height: 24rem;
+    overflow-y: auto;
+}

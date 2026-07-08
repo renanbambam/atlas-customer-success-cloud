@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ValidationRule xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Score_In_Range</fullName>
+    <active>true</active>
+    <description>NPS is answered on a 0-10 scale, CSAT on 1-5. Out-of-range values would corrupt the account NPS aggregation.</description>
+    <errorConditionFormula>OR(
+    AND(ISPICKVAL(Type__c, "NPS"), OR(Score__c &lt; 0, Score__c &gt; 10)),
+    AND(ISPICKVAL(Type__c, "CSAT"), OR(Score__c &lt; 1, Score__c &gt; 5))
+)</errorConditionFormula>
+    <errorDisplayField>Score__c</errorDisplayField>
+    <errorMessage>Score is out of range: NPS must be 0-10, CSAT must be 1-5.</errorMessage>
+</ValidationRule>

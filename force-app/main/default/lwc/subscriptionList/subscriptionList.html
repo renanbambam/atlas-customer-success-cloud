@@ -1,0 +1,23 @@
+<template>
+    <lightning-card title="Subscriptions" icon-name="standard:contract">
+        <div class="slds-var-p-horizontal_medium slds-var-p-bottom_medium">
+            <template lwc:if={errorMessage}>
+                <div class="slds-text-color_error" role="alert">{errorMessage}</div>
+            </template>
+            <template lwc:elseif={isEmpty}>
+                <p class="slds-text-body_small slds-text-color_weak">No subscriptions for this account.</p>
+            </template>
+            <template lwc:else>
+                <lightning-datatable
+                    key-field="Id"
+                    data={rows}
+                    columns={columns}
+                    sorted-by={sortedBy}
+                    sorted-direction={sortedDirection}
+                    onsort={handleSort}
+                    hide-checkbox-column
+                ></lightning-datatable>
+            </template>
+        </div>
+    </lightning-card>
+</template>

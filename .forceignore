@@ -1,0 +1,11 @@
+# Standard SFDX ignore
+package.xml
+
+# LWC configuration and test files are not deployable metadata
+**/jsconfig.json
+**/.eslintrc.json
+**/__tests__/**
+
+# Documentation lives in the repo only
+docs/**
+*.md

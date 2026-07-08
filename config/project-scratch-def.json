@@ -1,0 +1,16 @@
+{
+  "orgName": "Atlas Customer Success Cloud",
+  "edition": "Developer",
+  "features": ["EnableSetPasswordInApi"],
+  "settings": {
+    "lightningExperienceSettings": {
+      "enableS1DesktopEnabled": true
+    },
+    "mobileSettings": {
+      "enableS1EncryptedStoragePref2": false
+    },
+    "caseSettings": {
+      "systemUserEmail": "atlas.support@example.com"
+    }
+  }
+}
