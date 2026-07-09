@@ -1,4 +1,5 @@
 import { createElement } from '@lwc/engine-dom';
+import { subscribe, unsubscribe } from 'lightning/messageService';
 import HealthScorePanel from 'c/healthScorePanel';
 import getHealthSummary from '@salesforce/apex/HealthScoreController.getHealthSummary';
 
@@ -98,5 +99,16 @@ describe('c-health-score-panel', () => {
 
         expect(element.shadowRoot.querySelector('.score')).toBeNull();
         expect(element.shadowRoot.textContent).toContain('has not been scored yet');
+    });
+
+    it('unsubscribes from the message channel when removed from the DOM', () => {
+        const token = Symbol('subscription');
+        subscribe.mockReturnValue(token);
+
+        const element = buildComponent();
+        expect(subscribe).toHaveBeenCalledTimes(1);
+
+        document.body.removeChild(element);
+        expect(unsubscribe).toHaveBeenCalledWith(token);
     });
 });

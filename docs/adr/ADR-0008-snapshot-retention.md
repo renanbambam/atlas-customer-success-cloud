@@ -4,8 +4,9 @@ Status: Accepted
 
 ## Context
 
-`Health_Score_Snapshot__c` grows by (scored accounts × runs). At 1M scored accounts and nightly
-runs, that is ~365M rows/year — an LDV problem that degrades reports, backups and storage cost.
+`Health_Score_Snapshot__c` gains one row per scored account per nightly run, so it only ever
+grows. Without a retention policy it becomes an LDV problem that degrades reports, backups and
+storage cost.
 
 ## Decision
 

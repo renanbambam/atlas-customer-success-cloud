@@ -1,6 +1,6 @@
 import { LightningElement, api, wire } from 'lwc';
 import { refreshApex } from '@salesforce/apex';
-import { subscribe, MessageContext } from 'lightning/messageService';
+import { subscribe, unsubscribe, MessageContext } from 'lightning/messageService';
 import HEALTH_REFRESH_CHANNEL from '@salesforce/messageChannel/HealthScoreRefresh__c';
 import getSubscriptions from '@salesforce/apex/SubscriptionController.getSubscriptions';
 
@@ -48,6 +48,15 @@ export default class SubscriptionList extends LightningElement {
                 refreshApex(this.wiredRows);
             }
         });
+    }
+
+    disconnectedCallback() {
+        // Release the message-channel subscription when the component is torn
+        // down so it stops receiving refreshes after removal.
+        if (this.subscription) {
+            unsubscribe(this.subscription);
+            this.subscription = null;
+        }
     }
 
     get errorMessage() {

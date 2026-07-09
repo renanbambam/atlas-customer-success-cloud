@@ -1,7 +1,10 @@
 import { createElement } from '@lwc/engine-dom';
-import CsPortfolioDashboard from 'c/csPortfolioDashboard';
+import PortfolioDashboard from 'c/portfolioDashboard';
 import getPortfolioSummary from '@salesforce/apex/PortfolioController.getPortfolioSummary';
 import getAccountsByRisk from '@salesforce/apex/PortfolioController.getAccountsByRisk';
+
+jest.mock('@salesforce/i18n/currency', () => ({ default: 'USD' }), { virtual: true });
+jest.mock('@salesforce/i18n/locale', () => ({ default: 'en-US' }), { virtual: true });
 
 jest.mock(
     '@salesforce/apex/PortfolioController.getPortfolioSummary',
@@ -43,12 +46,12 @@ function flushPromises() {
 }
 
 function buildComponent() {
-    const element = createElement('c-cs-portfolio-dashboard', { is: CsPortfolioDashboard });
+    const element = createElement('c-portfolio-dashboard', { is: PortfolioDashboard });
     document.body.appendChild(element);
     return element;
 }
 
-describe('c-cs-portfolio-dashboard', () => {
+describe('c-portfolio-dashboard', () => {
     afterEach(() => {
         while (document.body.firstChild) {
             document.body.removeChild(document.body.firstChild);

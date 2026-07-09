@@ -1,4 +1,5 @@
 import { createElement } from '@lwc/engine-dom';
+import { subscribe, unsubscribe } from 'lightning/messageService';
 import SubscriptionList from 'c/subscriptionList';
 import getSubscriptions from '@salesforce/apex/SubscriptionController.getSubscriptions';
 
@@ -95,5 +96,16 @@ describe('c-subscription-list', () => {
         await flushPromises();
 
         expect(element.shadowRoot.querySelector('[role="alert"]')).not.toBeNull();
+    });
+
+    it('unsubscribes from the message channel when removed from the DOM', () => {
+        const token = Symbol('subscription');
+        subscribe.mockReturnValue(token);
+
+        const element = buildComponent();
+        expect(subscribe).toHaveBeenCalledTimes(1);
+
+        document.body.removeChild(element);
+        expect(unsubscribe).toHaveBeenCalledWith(token);
     });
 });

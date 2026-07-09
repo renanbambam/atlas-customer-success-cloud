@@ -71,8 +71,8 @@ What PMD can't see (layer rules above) is on the reviewer.
 ## 6. Things you might be tempted to do — don't
 
 - Add a repository class over a selector (see [ADR-0002](adr/ADR-0002-repository-as-selector-plus-uow.md)).
-- Recalculate the full health score synchronously in a trigger (review finding R9 — partial
-  updates only; the batch and the invocable own full recalcs).
+- Recalculate the full health score synchronously in a trigger. The survey trigger does a cheap
+  partial update (the NPS field) only; the batch and the invocable own full recalculations.
 - Query inside a dimension, a flow loop, or `TelemetryUsageDTO` mapping. Bulk first, always.
 - Hardcode an Id, a stage name in multiple places, or a retry count. Constants and metadata exist.
 - Name a framework class something generic. `TriggerHandler` and `TestDataFactory` collided

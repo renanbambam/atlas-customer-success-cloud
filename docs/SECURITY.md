@@ -52,7 +52,7 @@ Profiles are login/UI shells; **no CRUD/FLS is granted via profiles.**
 - Read: selectors use `WITH USER_MODE` (sharing + CRUD + FLS, catchable exceptions).
 - Write: `UnitOfWork` defaults to `AccessLevel.USER_MODE`.
 - System-mode exceptions are enumerated in [ADR-0005](adr/ADR-0005-user-mode-by-default.md) —
-  three paths, each justified.
+  each an explicit, listed path with its justification (that table is the single source of truth).
 - Inbound REST applies `Security.stripInaccessible(AccessType.UPSERTABLE, ...)` to deserialized
   payloads before DML (defense in depth on top of the integration user's minimal permission set).
 - No hardcoded IDs: record types via `getRecordTypeInfosByDeveloperName()`, queues/groups by
@@ -62,7 +62,7 @@ Profiles are login/UI shells; **no CRUD/FLS is granted via profiles.**
 
 Renewal opportunities with a discount ≥ 20% require CS Director approval. Approval processes
 bind to specific users/roles per environment, so the definition is an org-config runbook item,
-not repo metadata (architecture review finding R8):
+not repo metadata (environment-coupled metadata breaks sandbox deploys):
 
 - Entry: Opportunity record type = Renewal AND `Discount_Percent__c >= 0.20`
 - Step 1: submitter's manager; Step 2 (≥ 35%): CS Regional Director

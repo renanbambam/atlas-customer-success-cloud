@@ -1,7 +1,7 @@
 import { LightningElement, api, wire } from 'lwc';
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { refreshApex } from '@salesforce/apex';
-import { publish, subscribe, MessageContext } from 'lightning/messageService';
+import { publish, subscribe, unsubscribe, MessageContext } from 'lightning/messageService';
 import HEALTH_REFRESH_CHANNEL from '@salesforce/messageChannel/HealthScoreRefresh__c';
 import getHealthSummary from '@salesforce/apex/HealthScoreController.getHealthSummary';
 import recalculate from '@salesforce/apex/HealthScoreController.recalculate';
@@ -38,6 +38,16 @@ export default class HealthScorePanel extends LightningElement {
                 refreshApex(this.wiredSummary);
             }
         });
+    }
+
+    disconnectedCallback() {
+        // Release the message-channel subscription so a destroyed panel does
+        // not keep receiving refreshes (memory leak / duplicate handlers when
+        // the component re-renders on the page).
+        if (this.subscription) {
+            unsubscribe(this.subscription);
+            this.subscription = null;
+        }
     }
 
     get summary() {

@@ -48,7 +48,9 @@ global with sharing class AtlasSubscriptionRestApi {
                 JSON.serialize(new Map<String, Object>{ 'results' => results })
             );
         } catch (Exception e) {
-            String referenceId = String.valueOf(Crypto.getRandomInteger());
+            // Hex correlation id the caller can quote to support; it is echoed in
+            // the response and stored on the matching App_Log__c row.
+            String referenceId = EncodingUtil.convertToHex(Crypto.generateAesKey(128));
             Logger.error(SOURCE, 'Unexpected fault (' + referenceId + ')', e);
             Logger.flush();
             response.statusCode = 500;

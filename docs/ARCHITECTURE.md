@@ -1,14 +1,13 @@
 # Atlas Customer Success Cloud — Architecture Specification
 
-Status: **Approved for implementation** (v1.1, after internal architecture review — see §14)
-
-This document is the authoritative architecture for Atlas Customer Success Cloud, a native
+This document is the reference architecture for Atlas Customer Success Cloud, a native
 Salesforce application that manages the post-sale customer lifecycle: subscription management,
 customer health scoring, NPS/CSAT surveys, churn-risk engagement, support routing and the
 renewal/expansion pipeline.
 
-Target scale assumptions: 50,000+ users, millions of Account/Subscription/Snapshot records,
-hundreds of concurrent users, multiple delivery teams, continuous deployment.
+It is written for a large-org deployment: private sharing with role-hierarchy visibility, data
+access that stays within governor limits as data grows (aggregate queries, batch chunking), and
+async processing sized by data volume rather than user count.
 
 ---
 
@@ -26,8 +25,8 @@ hundreds of concurrent users, multiple delivery teams, continuous deployment.
 | Product telemetry                       | Scheduled ingestion from the telemetry API via Named Credential + Queueable with retry                         |
 | Observability                           | `Log_Event__e` (publish-immediately) persisted to `App_Log__c`                                                 |
 
-Deliberately **out of scope** (v1): CPQ integration, Entitlements/Milestones, Einstein scoring,
-Experience Cloud portal. Each is an extension point, not a gap in the core design.
+Out of scope for v1: CPQ integration, Entitlements/Milestones, Einstein scoring, Experience
+Cloud portal.
 
 ---
 
@@ -75,7 +74,7 @@ Key modeling decisions (full rationale in the ADRs):
 ```mermaid
 flowchart TD
     subgraph Presentation
-        LWC[LWC: healthScorePanel · subscriptionList\ncsPortfolioDashboard · renewalWorkspace]
+        LWC[LWC: healthScorePanel · subscriptionList\nportfolioDashboard · renewalWorkspace]
         PAGES[FlexiPages: Customer 360 · CS Command Center]
         FLOW[Flows: Churn Risk Alert Handler · Renewal Closed Won\nWeekly NPS Coverage · Log NPS Response]
         REST_IN[REST API: /atlas/v1/subscriptions]
@@ -93,7 +92,7 @@ flowchart TD
     subgraph Service
         SVC[SubscriptionService · HealthScoreService · SurveyService · TelemetryIngestionService]
     end
-    subgraph DataAccess["Data Access (Repository realized as...)"]
+    subgraph DataAccess["Data Access (Selector + UnitOfWork)"]
         SEL[Selectors — all reads]
         UOW[UnitOfWork — all writes]
     end
@@ -166,8 +165,8 @@ no hidden global state.
 
 ## 5. Health score engine
 
-The core differentiator of the product. Requirements: score millions of accounts nightly,
-per-dimension breakdown, admin-tunable weights without deployment, full auditability.
+Requirements: score the active customer base nightly, with a per-dimension breakdown,
+admin-tunable weights without a deployment, and full auditability of each run.
 
 ```mermaid
 sequenceDiagram
@@ -202,9 +201,9 @@ sequenceDiagram
 - **Bulk-safe by construction:** the service loads one `HealthScoreContext` per account from
   aggregate queries _before_ any dimension runs; dimensions are pure functions over the context —
   they cannot query.
-- **Why Batch Apex, not Scheduled Flow:** weighted multi-source aggregation over millions of rows
-  needs explicit chunking, aggregate SOQL, and unit tests. Flow has no aggregate query, weaker
-  bulkification control, and no isolated unit testing.
+- **Why Batch Apex, not Scheduled Flow:** weighted aggregation across four objects and time
+  windows needs explicit chunking, aggregate SOQL, and unit tests. Flow has no aggregate query,
+  weaker bulkification control, and no isolated unit testing.
 - **Why a platform event on risk escalation, not a flow on Account update:** the scoring engine
   must not know what engagement actions exist. The event decouples producer from consumers;
   today's consumer is a flow (admins own the playbook), tomorrow's could be Slack or Marketing
@@ -274,8 +273,9 @@ Full detail in [SECURITY.md](SECURITY.md). Summary:
 - Access via **Permission Sets and Permission Set Groups only** (`Atlas_CS_Base`, `Atlas_CSM`,
   `Atlas_CS_Manager` PSG, `Atlas_Integration`); profiles grant nothing.
 - Apex: Selectors run `WITH USER_MODE`; DML through UnitOfWork defaults to user mode
-  (`AccessLevel.USER_MODE`). The two deliberate system-mode paths — log persistence and the
-  nightly scoring batch — are documented in ADR-0005 with the reason each cannot run as user.
+  (`AccessLevel.USER_MODE`). The deliberate system-mode paths are enumerated in
+  [ADR-0005](adr/ADR-0005-user-mode-by-default.md) — one table, each row with the reason that
+  path cannot run as the user, kept as the single source of truth so no count drifts here.
 - No hardcoded IDs anywhere: record types resolved via `Schema.SObjectType...getRecordTypeInfosByDeveloperName()`,
   queues/groups by DeveloperName query.
 
@@ -286,7 +286,7 @@ Full detail in [SECURITY.md](SECURITY.md). Summary:
 | Subscription state rules                    | Apex (Domain)                     | Cross-field state machine with bulk `addError`; flows can't unit-test transitions                                                                                             |
 | Renewal opportunity creation                | Apex (Service via trigger)        | Needs record type resolution, UoW, idempotent re-alignment                                                                                                                    |
 | Churn engagement playbook                   | **Platform-event-triggered Flow** | Admins own cadence/wording; changes weekly; zero-deploy is the requirement                                                                                                    |
-| Nightly scoring                             | Batch + Scheduled Apex            | Aggregates over millions of rows                                                                                                                                              |
+| Nightly scoring                             | Batch + Scheduled Apex            | Aggregates across cases, surveys and subscriptions; chunked and unit-testable                                                                                                 |
 | Case routing                                | Assignment Rules + Queue          | Native, declarative, exactly what the feature is for                                                                                                                          |
 | Manual score refresh from Flow/quick action | Invocable Apex                    | Exposes the service to declarative tools without duplicating logic                                                                                                            |
 | Renewal won → subscription Renewed          | **Record-triggered Flow**         | One keyed cross-object field update with entry conditions; the Apex state machine still validates the transition — nothing to unit-test beyond what the domain already covers |
@@ -315,7 +315,8 @@ Rule of thumb applied: **declarative where admins iterate, Apex where engineers 
 - `Test.getEventBus().deliver()` for platform event subscriber tests.
 - Negative tests: invalid state transitions, FLS-restricted user (`System.runAs` with a
   minimum-access user + permission set assignment), API idempotency replay.
-- Target ≥ 90% with meaningful assertions (no assert-free coverage).
+- Every test asserts behaviour; assert-free coverage padding is rejected in review. Coverage is
+  reported by `sf apex run test --code-coverage` in CI, not asserted as a fixed number here.
 
 ## 13. DevOps
 
@@ -323,51 +324,8 @@ Rule of thumb applied: **declarative where admins iterate, Apex where engineers 
 - GitHub Actions: PR pipeline runs Prettier check → ESLint → LWC Jest → Salesforce Code
   Analyzer (PMD rules for bulkification/security) → scratch-org deploy + Apex tests (when a
   Dev Hub auth secret is configured).
-- Conventional Commits + SemVer for releases.
-
----
-
-## 14. Architecture review (Phase 3) — findings and resolutions
-
-Panel simulation: CTA, Platform Architect, Senior Apex, Senior LWC, Security Architect,
-Integration Architect, Performance Specialist. Findings that changed the design:
-
-| #   | Finding                                                     | Severity                                                                                   | Resolution                                                                                  |
-| --- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
-| R1  | v1.0 had a custom `Renewal__c` object                       | High — forks forecasting/reporting off-platform                                            | Replaced with Opportunity record types + Business Process (ADR-0003)                        |
-| R2  | v1.0 proposed full fflib as a dependency                    | Medium — 100+ classes of framework for a 4-service domain; team ramp-up cost exceeds value | Lean in-house Selector/UoW/TriggerHandler implementing the same concepts (ADR-0001)         |
-| R3  | Health dimensions queried inside `score()`                  | Critical — SOQL × dimensions × accounts explodes in batch                                  | Context object pattern: service pre-loads aggregates once; dimensions are pure functions    |
-| R4  | Renewal opportunities via daily scan batch                  | Medium — scan window fragility, extra job, delayed pipeline                                | Event-driven creation in the subscription trigger path                                      |
-| R5  | Snapshot object had no retention plan                       | High at LDV scale                                                                          | Retention purge in batch finish, window in Custom Metadata; Big Object exit documented      |
-| R6  | Generic `Repository__c`-style DAO layer over Selectors      | Medium — abstraction with no consumer benefit                                              | Removed; Selector + UnitOfWork _are_ the repository (ADR-0002)                              |
-| R7  | Logging wrote `App_Log__c` synchronously                    | High — logs lost on rollback; DML in exception paths can itself throw                      | `Log_Event__e` publish-immediately + subscriber trigger (ADR-0007)                          |
-| R8  | Approval process XML in repo referencing org users          | Medium — environment-coupled metadata breaks every sandbox deploy                          | Moved to org-config runbook in SECURITY.md; design documented, not versioned                |
-| R9  | Survey trigger recalculated full health score synchronously | High — user-facing save time + limits shared with the batch                                | Survey trigger only updates `NPS__c`; full recalc stays async (nightly or manual invocable) |
-| R10 | LWC chart via external CDN                                  | High — blocked by CSP/LWS, external dependency                                             | Inline SVG sparkline; no third-party runtime                                                |
-
-Residual risks accepted (documented, not hidden): single-org design (no multi-org sync);
-telemetry pull model limits data freshness to the schedule; NPS aggregation window (180d) is a
-product decision that may need tuning.
-
-### Production readiness addendum (v1.2 — dashboard/flows increment)
-
-| #   | Finding                                                                                  | Severity              | Resolution                                                                                                                                                |
-| --- | ---------------------------------------------------------------------------------------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| R11 | Weekly NPS Coverage flow re-creates its task each week while an account stays unsurveyed | Low — bounded noise   | Accepted: the task disappears the moment any NPS lands (NPS__c becomes non-null and the account exits the entry criteria); cadence is admin-owned         |
-| R12 | Dashboard/workspace pagination uses SOQL OFFSET (platform cap 2,000)                     | Low                   | By design: these are triage worklists with whitelisted page sizes and offsets; exhaustive lists belong to reports. Cap documented in OPERATIONS.md        |
-| R13 | Scheduled-flow entry criteria could tempt per-interview Get Records at scale             | High if violated      | Rule codified in DEVELOPER_GUIDE/ARCHITECTURE: scheduled flows may filter only on indexed fields of the triggering object; anything needing joins is Apex |
-| R14 | Aggregate dashboard queries run as the viewer                                            | — (intended)          | Confirmed correct: USER_MODE means a manager's KPIs are their visible book, which is the business requirement, not a bug                                  |
-| R15 | Hand-formatting drift across 60+ Apex/LWC files                                          | Low — review friction | Prettier (incl. prettier-plugin-apex) is now the format authority; `prettier:verify` gates CI                                                             |
-
-### Org-verified findings (v1.3 — everything below surfaced by deploying and running the suite in a real org)
-
-| #   | Finding                                                                                                                                                                      | Resolution                                                                                                                                                |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| R16 | Generic framework class names (`TriggerHandler`, `TestDataFactory`) collided with another codebase sharing the org, silently replacing its classes                           | Renamed to `AtlasTriggerHandler` / `AtlasTestDataFactory`; rule added to the developer guide: framework-level classes carry the app prefix                |
-| R17 | Freshly deployed fields and record types grant FLS / record-type visibility to no one, so `WITH USER_MODE` paths fail even for admins                                        | Permission-set assignment is a mandatory deploy step (CI, README, guides); record-type visibility added to `Atlas_CS_Base` / `Atlas_Integration`          |
-| R18 | Tests resolved the Standard User profile by its English display name, which breaks on localized orgs                                                                         | Factory selects a profile structurally (`UserType`, license, no Modify/View All Data)                                                                     |
-| R19 | Mixing `PermissionSetAssignment` DML with regular DML in one test transaction throws MIXED_DML                                                                               | Factory wraps setup-object DML in its own `System.runAs` block                                                                                            |
-| R20 | `Product2` lookups cannot carry a restricted delete constraint; Opportunity Business Processes reject stage defaults; detail objects must align sharing/bulk/streaming flags | Product lookup is SetNull + a `Product_Required` validation rule; defaults removed from the Business Process; flags aligned on all Master-Detail children |
+- Releases are cut from Git tags (`v*`); the release workflow validates check-only against
+  production before deploying.
 
 ---
 

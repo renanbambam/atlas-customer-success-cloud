@@ -82,19 +82,12 @@ export default class RenewalWorkspace extends LightningElement {
         });
     }
 
+    // Sorting is server-side: the list is paged, so reordering only the loaded
+    // rows would misrepresent the full result set. Re-query from the top instead.
     handleSort(event) {
-        const { fieldName, sortDirection } = event.detail;
-        this.sortedBy = fieldName;
-        this.sortedDirection = sortDirection;
-        const modifier = sortDirection === 'asc' ? 1 : -1;
-        this.rows = [...this.rows].sort((a, b) => {
-            const left = a[fieldName] ?? '';
-            const right = b[fieldName] ?? '';
-            if (left === right) {
-                return 0;
-            }
-            return left > right ? modifier : -modifier;
-        });
+        this.sortedBy = event.detail.fieldName;
+        this.sortedDirection = event.detail.sortDirection;
+        this.loadPage(true);
     }
 
     async loadPage(reset) {
@@ -109,7 +102,9 @@ export default class RenewalWorkspace extends LightningElement {
             const page = await getRenewals({
                 horizonDays: parseInt(this.selectedHorizon, 10),
                 pageSize: PAGE_SIZE,
-                offsetValue: this.offset
+                offsetValue: this.offset,
+                sortBy: this.sortedBy,
+                sortDirection: this.sortedDirection
             });
             this.rows = [
                 ...this.rows,
