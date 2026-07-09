@@ -55,9 +55,10 @@ Then run the scoring batch once to rebuild current state.
 
 ## 5. Capacity notes
 
-- `Health_Score_Snapshot__c` is bounded by `Snapshot_Retention_Months__c` × daily scored
-  accounts. At 1M accounts and 18 months that's ~550M rows — if you're heading there, execute
-  the Big Object exit in [ADR-0008](adr/ADR-0008-snapshot-retention.md) _before_ reports slow down.
+- `Health_Score_Snapshot__c` size is bounded by `Snapshot_Retention_Months__c` × daily scored
+  accounts (one row per account per run). If retention has to stay long at a high account count,
+  execute the Big Object exit in [ADR-0008](adr/ADR-0008-snapshot-retention.md) _before_ reports
+  slow down.
 - The telemetry callout sends up to 100 account keys per GET; if the provider adds a POST
   bulk endpoint, only `TelemetryClient` changes.
 - OFFSET pagination in the dashboards is capped at 2,000 rows by the platform — the triage

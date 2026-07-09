@@ -29,5 +29,4 @@ This is also exactly how Salesforce's Apex Enterprise Patterns decompose Reposit
 ## Consequences
 
 - (+) One obvious place per object for queries; one write pipeline to audit for security.
-- (−) Purists looking for a class literally named `*Repository` won't find one; this ADR is the
-  answer.
+- (−) There is no class literally named `*Repository`; this ADR records why.

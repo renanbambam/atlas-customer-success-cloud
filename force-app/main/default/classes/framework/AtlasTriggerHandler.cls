@@ -1,19 +1,34 @@
 /**
  * Base class for all Atlas trigger handlers. Routes trigger events to
- * overridable methods and exposes a transaction-scoped bypass API so data
- * migrations and integration jobs can suppress automation deliberately
- * instead of with flags on records.
+ * overridable methods, guards against a handler re-entering itself, and
+ * exposes a transaction-scoped bypass API so data migrations and integration
+ * jobs can suppress automation deliberately instead of with flags on records.
  *
  * Deliberately prefixed: a class literally named "TriggerHandler" is the most
  * common collision in orgs that host more than one codebase.
  */
 public virtual class AtlasTriggerHandler {
     private static final Set<String> BYPASSED = new Set<String>();
+    // Handlers currently on the call stack. If a handler's own DML re-fires its
+    // trigger synchronously, the nested invocation is skipped, so self-recursion
+    // can't run away; the name is cleared once the outer invocation returns, so
+    // separate top-level trigger batches in the same transaction still run.
+    private static final Set<String> IN_PROGRESS = new Set<String>();
 
     public void run() {
-        if (!Trigger.isExecuting || isBypassed(handlerName())) {
+        String handler = handlerName();
+        if (!Trigger.isExecuting || isBypassed(handler) || IN_PROGRESS.contains(handler)) {
             return;
         }
+        IN_PROGRESS.add(handler);
+        try {
+            dispatch();
+        } finally {
+            IN_PROGRESS.remove(handler);
+        }
+    }
+
+    private void dispatch() {
         switch on Trigger.operationType {
             when BEFORE_INSERT {
                 beforeInsert(Trigger.new);

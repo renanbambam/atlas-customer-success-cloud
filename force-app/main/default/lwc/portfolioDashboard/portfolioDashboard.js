@@ -1,4 +1,6 @@
 import { LightningElement, wire } from 'lwc';
+import CURRENCY from '@salesforce/i18n/currency';
+import LOCALE from '@salesforce/i18n/locale';
 import getPortfolioSummary from '@salesforce/apex/PortfolioController.getPortfolioSummary';
 import getAccountsByRisk from '@salesforce/apex/PortfolioController.getAccountsByRisk';
 
@@ -23,7 +25,7 @@ const ACCOUNT_COLUMNS = [
     { label: 'CSM', fieldName: 'csmName' }
 ];
 
-export default class CsPortfolioDashboard extends LightningElement {
+export default class PortfolioDashboard extends LightningElement {
     riskOptions = RISK_OPTIONS;
     accountColumns = ACCOUNT_COLUMNS;
     selectedRisk = 'High';
@@ -159,15 +161,18 @@ export default class CsPortfolioDashboard extends LightningElement {
         }
     }
 
+    // Currency and locale come from the running user's org context, so the
+    // dashboard reads correctly in a non-USD or multi-locale org rather than
+    // forcing US-dollar formatting on everyone.
     formatCurrency(value) {
-        return new Intl.NumberFormat(undefined, {
+        return new Intl.NumberFormat(LOCALE, {
             style: 'currency',
-            currency: 'USD',
+            currency: CURRENCY,
             maximumFractionDigits: 0
         }).format(value || 0);
     }
 
     formatNumber(value) {
-        return new Intl.NumberFormat().format(value || 0);
+        return new Intl.NumberFormat(LOCALE).format(value || 0);
     }
 }

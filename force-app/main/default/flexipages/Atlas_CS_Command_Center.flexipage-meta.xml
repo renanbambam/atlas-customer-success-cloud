@@ -4,8 +4,8 @@
     <flexiPageRegions>
         <itemInstances>
             <componentInstance>
-                <componentName>csPortfolioDashboard</componentName>
-                <identifier>c_csPortfolioDashboard</identifier>
+                <componentName>portfolioDashboard</componentName>
+                <identifier>c_portfolioDashboard</identifier>
             </componentInstance>
         </itemInstances>
         <itemInstances>

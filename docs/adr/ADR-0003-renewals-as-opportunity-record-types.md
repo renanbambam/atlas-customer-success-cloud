@@ -22,8 +22,8 @@ Business Process (standard stage set) in v1.
 
 ## Alternatives rejected
 
-- `Renewal__c` custom object: total loss of native pipeline tooling; rejected in architecture
-  review (finding R1).
+- `Renewal__c` custom object: total loss of native pipeline tooling — not worth that cost for a
+  motion that is, commercially, still pipeline.
 - Salesforce CPQ renewal automation: correct at CPQ shops, but v1 does not assume CPQ is licensed.
 
 ## Consequences

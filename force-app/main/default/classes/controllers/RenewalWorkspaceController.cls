@@ -9,7 +9,13 @@ public with sharing class RenewalWorkspaceController {
     private static final Set<Integer> ALLOWED_HORIZONS = new Set<Integer>{ 30, 60, 90, 180 };
 
     @AuraEnabled(cacheable=true)
-    public static List<RenewalRow> getRenewals(Integer horizonDays, Integer pageSize, Integer offsetValue) {
+    public static List<RenewalRow> getRenewals(
+        Integer horizonDays,
+        Integer pageSize,
+        Integer offsetValue,
+        String sortBy,
+        String sortDirection
+    ) {
         if (!ALLOWED_HORIZONS.contains(horizonDays)) {
             throw new AuraHandledException('Unsupported horizon: ' + horizonDays);
         }
@@ -19,12 +25,14 @@ public with sharing class RenewalWorkspaceController {
             ? MAX_PAGE_SIZE
             : pageSize;
         Integer safeOffset = offsetValue == null || offsetValue < 0 ? 0 : Math.min(offsetValue, MAX_OFFSET);
+        // The selector allowlists sortBy; here we only decide direction (default ascending).
+        Boolean ascending = !(sortDirection != null && sortDirection.equalsIgnoreCase('desc'));
 
         try {
             List<RenewalRow> rows = new List<RenewalRow>();
             for (
                 Opportunity renewal : new OpportunitySelector()
-                    .selectOpenRenewalsDueWithin(horizonDays, safePageSize, safeOffset)
+                    .selectOpenRenewalsDueWithin(horizonDays, safePageSize, safeOffset, sortBy, ascending)
             ) {
                 RenewalRow row = new RenewalRow();
                 row.opportunityId = renewal.Id;

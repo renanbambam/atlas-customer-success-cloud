@@ -20,17 +20,23 @@ private class RenewalWorkspaceControllerTest {
         List<RenewalWorkspaceController.RenewalRow> within30 = RenewalWorkspaceController.getRenewals(
             30,
             50,
-            0
+            0,
+            'closeDate',
+            'asc'
         );
         List<RenewalWorkspaceController.RenewalRow> within60 = RenewalWorkspaceController.getRenewals(
             60,
             50,
-            0
+            0,
+            'closeDate',
+            'asc'
         );
         List<RenewalWorkspaceController.RenewalRow> within180 = RenewalWorkspaceController.getRenewals(
             180,
             50,
-            0
+            0,
+            'closeDate',
+            'asc'
         );
         Test.stopTest();
 
@@ -43,17 +49,57 @@ private class RenewalWorkspaceControllerTest {
     }
 
     @IsTest
+    static void sortDirectionIsAppliedOnTheServer() {
+        Test.startTest();
+        List<RenewalWorkspaceController.RenewalRow> descending = RenewalWorkspaceController.getRenewals(
+            60,
+            50,
+            0,
+            'closeDate',
+            'desc'
+        );
+        Test.stopTest();
+
+        System.assertEquals(2, descending.size());
+        System.assert(
+            descending[0].closeDate >= descending[1].closeDate,
+            'Descending sort must reverse the server order, not just the loaded page'
+        );
+    }
+
+    @IsTest
+    static void unknownSortColumnFallsBackToCloseDate() {
+        Test.startTest();
+        // An unmapped column must not break the query — it falls back to close date.
+        List<RenewalWorkspaceController.RenewalRow> rows = RenewalWorkspaceController.getRenewals(
+            60,
+            50,
+            0,
+            'notAColumn',
+            'asc'
+        );
+        Test.stopTest();
+
+        System.assertEquals(2, rows.size());
+        System.assert(rows[0].closeDate <= rows[1].closeDate, 'Fallback order is close date ascending');
+    }
+
+    @IsTest
     static void paginationWalksTheList() {
         Test.startTest();
         List<RenewalWorkspaceController.RenewalRow> firstPage = RenewalWorkspaceController.getRenewals(
             60,
             1,
-            0
+            0,
+            'closeDate',
+            'asc'
         );
         List<RenewalWorkspaceController.RenewalRow> secondPage = RenewalWorkspaceController.getRenewals(
             60,
             1,
-            1
+            1,
+            'closeDate',
+            'asc'
         );
         Test.stopTest();
 
@@ -65,7 +111,7 @@ private class RenewalWorkspaceControllerTest {
     @IsTest
     static void unsupportedHorizonIsRejected() {
         try {
-            RenewalWorkspaceController.getRenewals(7, 10, 0);
+            RenewalWorkspaceController.getRenewals(7, 10, 0, 'closeDate', 'asc');
             System.assert(false, 'Expected AuraHandledException');
         } catch (AuraHandledException e) {
             System.assert(true, 'Horizon whitelist held');

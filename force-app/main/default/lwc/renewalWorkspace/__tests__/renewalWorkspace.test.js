@@ -40,7 +40,13 @@ describe('c-renewal-workspace', () => {
         const element = buildComponent();
         await flushPromises();
 
-        expect(getRenewals).toHaveBeenCalledWith({ horizonDays: 90, pageSize: 25, offsetValue: 0 });
+        expect(getRenewals).toHaveBeenCalledWith({
+            horizonDays: 90,
+            pageSize: 25,
+            offsetValue: 0,
+            sortBy: 'closeDate',
+            sortDirection: 'asc'
+        });
         const table = element.shadowRoot.querySelector('lightning-datatable');
         expect(table.data).toHaveLength(25);
     });
@@ -54,7 +60,13 @@ describe('c-renewal-workspace', () => {
         combobox.dispatchEvent(new CustomEvent('change', { detail: { value: '30' } }));
         await flushPromises();
 
-        expect(getRenewals).toHaveBeenLastCalledWith({ horizonDays: 30, pageSize: 25, offsetValue: 0 });
+        expect(getRenewals).toHaveBeenLastCalledWith({
+            horizonDays: 30,
+            pageSize: 25,
+            offsetValue: 0,
+            sortBy: 'closeDate',
+            sortDirection: 'asc'
+        });
         expect(element.shadowRoot.textContent).toContain('No open renewals');
     });
 
@@ -69,21 +81,36 @@ describe('c-renewal-workspace', () => {
         await flushPromises();
 
         expect(table.data).toHaveLength(30);
-        expect(getRenewals).toHaveBeenLastCalledWith({ horizonDays: 90, pageSize: 25, offsetValue: 25 });
+        expect(getRenewals).toHaveBeenLastCalledWith({
+            horizonDays: 90,
+            pageSize: 25,
+            offsetValue: 25,
+            sortBy: 'closeDate',
+            sortDirection: 'asc'
+        });
     });
 
-    it('sorts loaded rows client-side', async () => {
-        getRenewals.mockResolvedValue(PAGE.slice(0, 3));
+    it('re-queries from the top with the new sort when a column header is clicked', async () => {
+        getRenewals.mockResolvedValue(PAGE);
         const element = buildComponent();
         await flushPromises();
 
+        getRenewals.mockResolvedValue(PAGE.slice(0, 3));
         const table = element.shadowRoot.querySelector('lightning-datatable');
         table.dispatchEvent(
             new CustomEvent('sort', { detail: { fieldName: 'amount', sortDirection: 'desc' } })
         );
         await flushPromises();
 
-        expect(table.data[0].amount).toBe(50002);
+        // Sorting resets paging (offset 0) and pushes the new sort to the server.
+        expect(getRenewals).toHaveBeenLastCalledWith({
+            horizonDays: 90,
+            pageSize: 25,
+            offsetValue: 0,
+            sortBy: 'amount',
+            sortDirection: 'desc'
+        });
+        expect(table.data).toHaveLength(3);
     });
 
     it('surfaces failures as an alert', async () => {

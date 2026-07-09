@@ -3,8 +3,14 @@
  * volume per account never has to fit in the heap.
  */
 public inherited sharing class SurveyResponseSelector {
-    /** Per-account NPS raw material: promoter/detractor/total counts inside the window. */
-    public Map<Id, NpsAggregate> aggregateNpsByAccount(Set<Id> accountIds, Integer windowDays) {
+    /**
+     * Per-account NPS raw material: promoter/detractor/total counts inside the
+     * window. SYSTEM_MODE by design — Account.NPS__c is a system-maintained
+     * rollup, so the aggregate must see every response regardless of the
+     * running user's FLS or sharing, exactly like a roll-up summary. The name
+     * carries the SystemMode suffix this codebase uses to flag that bypass.
+     */
+    public Map<Id, NpsAggregate> aggregateNpsByAccountSystemMode(Set<Id> accountIds, Integer windowDays) {
         Date windowStart = Date.today().addDays(-windowDays);
         Map<Id, NpsAggregate> aggregatesByAccount = new Map<Id, NpsAggregate>();
         for (AggregateResult result : [

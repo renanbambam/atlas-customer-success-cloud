@@ -16,8 +16,12 @@ Custom Apex REST resource `POST /services/apexrest/atlas/v1/subscriptions`:
   (unique, external ID, indexed) and the account's billing key → `Account.Billing_System_Id__c`.
 - The handler performs an upsert on `External_Id__c`; replaying the same payload N times yields
   one record and a 200 — idempotency by key, not by dedupe log.
-- Error mapping: 400 malformed JSON / missing key, 404 unknown account key, 200 with per-item
-  results for partial batches, 500 only for unexpected faults (logged via `Logger`).
+- Error mapping: **400** for an unparseable body or a missing/empty `subscriptions` array;
+  **200** with per-item `created` / `updated` / `error` results for everything item-level
+  (missing fields, malformed dates, unknown `accountBillingId`); **500** only for an unexpected
+  fault, logged via `Logger` with a `referenceId` echoed to the caller. The batch is atomic at
+  the transport layer (one status) and granular in the body (one result per item) — see
+  [API.md](../API.md) for the exact contract.
 
 ## Alternatives rejected
 

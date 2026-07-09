@@ -1,7 +1,8 @@
 /**
  * Keeps Account.NPS__c aligned with the survey responses inside the rolling
  * window. Cheap enough to run synchronously in the survey trigger; the full
- * health recalculation stays in the nightly batch (review finding R9).
+ * health recalculation stays in the nightly batch to keep save time and the
+ * transaction's governor budget low.
  */
 public inherited sharing class SurveyService {
     private final SurveyResponseSelector surveySelector = new SurveyResponseSelector();
@@ -10,7 +11,7 @@ public inherited sharing class SurveyService {
         if (accountIds.isEmpty()) {
             return;
         }
-        Map<Id, SurveyResponseSelector.NpsAggregate> aggregatesByAccount = surveySelector.aggregateNpsByAccount(
+        Map<Id, SurveyResponseSelector.NpsAggregate> aggregatesByAccount = surveySelector.aggregateNpsByAccountSystemMode(
             accountIds,
             AtlasSettings.npsWindowDays()
         );

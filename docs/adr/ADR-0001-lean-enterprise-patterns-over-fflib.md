@@ -32,6 +32,6 @@ Implement the patterns in-house, minimally:
 
 ## Consequences
 
-- (+) Every framework class in the repo is read-and-understood in minutes.
+- (+) The framework is small enough to read in full; there is no third-party layer to learn.
 - (−) No `fflib_ApexMocks`; tests use real DML plus `HttpCalloutMock`/`Test.getEventBus()`.
   Accepted: integration-style Apex tests are also what verifies FLS/sharing behavior.

@@ -5,8 +5,8 @@ Status: Accepted
 ## Context
 
 The health score is a weighted composite of adoption, support, engagement and financial signals
-computed for every account with active subscriptions (millions of rows), nightly, with
-per-dimension auditability and business-tunable weights.
+computed nightly for every account with an active subscription, with per-dimension auditability
+and business-tunable weights.
 
 ## Decision
 
@@ -22,13 +22,14 @@ per-dimension auditability and business-tunable weights.
 
 ## Alternatives rejected
 
-- **Scheduled Flow**: no aggregate queries, no unit tests for the math, weak control over
-  chunking at millions of records.
+- **Scheduled Flow**: no aggregate queries, no unit tests for the math, weaker control over
+  chunking as the data set grows.
 - **Rollup fields / formula**: the score spans four objects and time windows; not expressible.
 - **Einstein/CRM Analytics**: valid future layer, but the deterministic operational score must
   not depend on an add-on license.
-- **Synchronous recalculation in triggers**: user-facing save time and shared governor budgets;
-  review finding R9 restricted triggers to cheap partial updates (NPS field only).
+- **Synchronous recalculation in triggers**: adds user-facing save time and shares the
+  transaction's governor budget; the survey trigger is therefore restricted to a cheap partial
+  update (the `NPS__c` field only), and full recalculation stays async.
 
 ## Consequences
 

@@ -165,7 +165,7 @@ public inherited sharing class HealthScoreService {
         Map<Id, Integer> escalations = caseMetricsSelector.countEscalatedLast90DaysByAccountSystemMode(
             accountIds
         );
-        Map<Id, SurveyResponseSelector.NpsAggregate> npsAggregates = surveySelector.aggregateNpsByAccount(
+        Map<Id, SurveyResponseSelector.NpsAggregate> npsAggregates = surveySelector.aggregateNpsByAccountSystemMode(
             accountIds,
             AtlasSettings.npsWindowDays()
         );
